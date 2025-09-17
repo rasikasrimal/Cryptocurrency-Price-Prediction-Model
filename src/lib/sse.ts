@@ -1,4 +1,6 @@
-import type { StreamChunk } from "@/types/chat";
+
+import { streamChunkSchema, type StreamChunk } from "@/types/chat";
+
 
 export interface StreamOptions {
   onChunk?: (chunk: StreamChunk) => void;
@@ -48,7 +50,15 @@ export function createEventStream(url: string, body: unknown, options: StreamOpt
           const type = eventLine.replace("event:", "").trim();
           try {
             const payload = JSON.parse(dataLine.replace("data:", "").trim());
-            options.onChunk?.({ type, data: payload } as StreamChunk);
+
+            const candidate = { type, data: payload };
+            const parsed = streamChunkSchema.safeParse(candidate);
+            if (parsed.success) {
+              options.onChunk?.(parsed.data);
+            } else {
+              options.onError?.(new Error(parsed.error.message));
+            }
+
           } catch (error) {
             options.onError?.(error as Error);
           }

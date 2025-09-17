@@ -3,6 +3,19 @@ import { devtools } from "zustand/middleware";
 
 import type { ChatMessage, StreamChunk, ToolCall } from "@/types/chat";
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const hasStringId = (value: unknown): value is { id: string } =>
+  isRecord(value) && typeof value.id === "string";
+
+const getStringOutput = (value: unknown): string | undefined => {
+  if (!isRecord(value) || !("output" in value)) {
+    return undefined;
+  }
+  return typeof value.output === "string" ? value.output : undefined;
+};
+
 export interface ChatState {
   messages: ChatMessage[];
   isStreaming: boolean;
@@ -88,23 +101,24 @@ export const useChatStore = create<ChatState>()(
             };
           }
           case "done": {
-            const toolId = typeof chunk.data === "object" && chunk.data ? (chunk.data as { id?: string }).id : undefined;
-            if (toolId && state.pendingToolCalls[toolId]) {
-              const output =
-                typeof chunk.data === "object" && chunk.data
-                  ? (chunk.data as { output?: string }).output
-                  : undefined;
-              return {
-                isStreaming: false,
-                pendingToolCalls: {
-                  ...state.pendingToolCalls,
-                  [toolId]: {
-                    ...state.pendingToolCalls[toolId],
-                    status: "done",
-                    output: output ?? state.pendingToolCalls[toolId].output
+            const data = chunk.data as unknown;
+            if (hasStringId(data)) {
+              const existing = state.pendingToolCalls[data.id];
+              if (existing) {
+                const output = getStringOutput(data);
+                return {
+                  isStreaming: false,
+                  pendingToolCalls: {
+                    ...state.pendingToolCalls,
+                    [data.id]: {
+                      ...existing,
+                      status: "done",
+                      output: output ?? existing.output
+                    }
                   }
-                }
-              };
+                };
+              }
+
             }
             return { isStreaming: false };
           }

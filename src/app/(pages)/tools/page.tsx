@@ -1,10 +1,12 @@
 import { AppShell } from "@/components/layout/AppShell";
-import { ToolsClient } from "./ToolsClient";
+import { ToolsPageContent } from "@/components/pages/ToolsPageContent";
+
 
 export default function ToolsPage() {
   return (
     <AppShell>
-      <ToolsClient />
+      <ToolsPageContent />
+
     </AppShell>
   );
 }

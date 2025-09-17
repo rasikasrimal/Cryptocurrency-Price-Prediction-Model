@@ -1,10 +1,11 @@
 import { AppShell } from "@/components/layout/AppShell";
-import { ChatClient } from "./ChatClient";
+import { ChatPageContent } from "@/components/pages/ChatPageContent";
+
 
 export default function ChatPage() {
   return (
     <AppShell>
-      <ChatClient />
+      <ChatPageContent />
     </AppShell>
   );
 }

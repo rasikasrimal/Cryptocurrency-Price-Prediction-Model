@@ -8,5 +8,10 @@ export async function requireSession(request: Request): Promise<Session> {
   if (!auth) {
     return { id: crypto.randomUUID(), userId: "anonymous" };
   }
-  return { id: crypto.randomUUID(), userId: auth.replace("Bearer", "").trim() || "anonymous" };
+  if (auth.startsWith("Bearer ")) {
+    const token = auth.slice(7).trim();
+    return { id: crypto.randomUUID(), userId: token || "anonymous" };
+  }
+  return { id: crypto.randomUUID(), userId: "anonymous" };
+
 }

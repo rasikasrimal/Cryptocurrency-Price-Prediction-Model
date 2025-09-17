@@ -1,10 +1,13 @@
 import { AppShell } from "@/components/layout/AppShell";
-import { DashboardClient } from "./DashboardClient";
+
+import { DashboardPageContent } from "@/components/pages/DashboardPageContent";
+
 
 export default function DashboardPage() {
   return (
     <AppShell>
-      <DashboardClient />
+      <DashboardPageContent />
+
     </AppShell>
   );
 }
