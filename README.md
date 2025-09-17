@@ -43,30 +43,30 @@ pnpm add -D prisma vitest @vitest/ui playwright @playwright/test @types/node
 ## Architecture Overview
 
 ```
-/src
-  app
-    (pages)
-      chat
-      tools
-      dashboard
-    api
-      realtime      # SSE endpoint
-      ws             # WebSocket upgrade handler (Edge runtime)
-      messages       # Cursor-based REST API
-      tools/[tool]   # Tool execution proxy
-  components        # Reusable, token-aware UI building blocks
-  hooks             # Streaming, WebSocket, and keyboard hooks
-  lib               # Fetching, logging, metrics, validators
-  server            # Realtime helpers, persistence stubs
-  stores            # Zustand slices per domain
-  styles            # Tailwind + theme tokens
-  tests             # Vitest + Playwright harness
+app
+  (pages)
+    chat
+    tools
+    dashboard
+  api
+    realtime      # SSE endpoint
+    ws             # WebSocket upgrade handler (Edge runtime)
+    messages       # Cursor-based REST API
+    tools/[tool]   # Tool execution proxy
+components        # Reusable, token-aware UI building blocks
+hooks             # Streaming, WebSocket, and keyboard hooks
+lib               # Fetching, logging, metrics, validators
+server            # Realtime helpers, persistence stubs
+stores            # Zustand slices per domain
+styles            # Tailwind + theme tokens
+tests             # Vitest + Playwright harness
 ```
 
-- Shared contracts live in `src/types` and are enforced with zod at API boundaries.
-- `src/components/ui` wraps shadcn primitives with project-specific tokens and interaction states.
-- `src/hooks/useStream` and `src/hooks/useWebSocket` manage realtime flows with automatic cleanup and retries.
-- `src/stores/*` slices keep UI state modular and minimise unnecessary renders.
+- Shared contracts live in `types` and are enforced with zod at API boundaries.
+- `components/ui` wraps shadcn primitives with project-specific tokens and interaction states.
+- `hooks/useStream` and `hooks/useWebSocket` manage realtime flows with automatic cleanup and retries.
+- `stores/*` slices keep UI state modular and minimise unnecessary renders.
+
 
 ## Testing
 
@@ -74,11 +74,12 @@ pnpm add -D prisma vitest @vitest/ui playwright @playwright/test @types/node
 pnpm test
 ```
 
-Add Playwright scenarios under `src/tests/e2e` to cover streaming, tool execution, and reconnection flows.
+Add Playwright scenarios under `tests/e2e` to cover streaming, tool execution, and reconnection flows.
 
 ## Environment
 
-Environment variables are validated with zod in `src/lib/validators.ts`. Optional variables:
+Environment variables are validated with zod in `lib/validators.ts`. Optional variables:
+
 
 - `NEXT_PUBLIC_API_BASE`
 - `NEXT_PUBLIC_WS_BASE`
@@ -86,6 +87,6 @@ Environment variables are validated with zod in `src/lib/validators.ts`. Optiona
 
 ## Notes
 
-- Server utilities under `src/server` provide an upgrade path toward persistent storage, rate limiting, and pub/sub fan-out.
+- Server utilities under `server` provide an upgrade path toward persistent storage, rate limiting, and pub/sub fan-out.
 - The in-memory message store keeps the demo self-contained while exposing clear seams for database integration.
 - Styling adheres to a 4px spacing scale, dual accent palette, and consistent typography for high visual polish.
