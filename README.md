@@ -67,6 +67,7 @@ tests             # Vitest + Playwright harness
 - `hooks/useStream` and `hooks/useWebSocket` manage realtime flows with automatic cleanup and retries.
 - `stores/*` slices keep UI state modular and minimise unnecessary renders.
 
+
 ## Testing
 
 ```bash
@@ -78,6 +79,7 @@ Add Playwright scenarios under `tests/e2e` to cover streaming, tool execution, a
 ## Environment
 
 Environment variables are validated with zod in `lib/validators.ts`. Optional variables:
+
 
 - `NEXT_PUBLIC_API_BASE`
 - `NEXT_PUBLIC_WS_BASE`
