@@ -118,6 +118,7 @@ export const useChatStore = create<ChatState>()(
                   }
                 };
               }
+
             }
             return { isStreaming: false };
           }

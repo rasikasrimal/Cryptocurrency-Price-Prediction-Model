@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { chatMessageSchema, streamChunkSchema, toolCallSchema } from "@/types/chat";
 
+
 export const pagedSchema = <T extends z.ZodTypeAny>(item: T) =>
   z.object({
     items: z.array(item),
@@ -14,6 +15,7 @@ export const createMessageSchema = z.object({
   role: z.enum(["user", "assistant", "tool", "system"]),
   content: z.string().min(1),
   toolCalls: z.array(toolCallSchema).optional()
+
 });
 
 export const realtimeRequestSchema = z.object({

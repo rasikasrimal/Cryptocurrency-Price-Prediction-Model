@@ -13,4 +13,5 @@ export async function requireSession(request: Request): Promise<Session> {
     return { id: crypto.randomUUID(), userId: token || "anonymous" };
   }
   return { id: crypto.randomUUID(), userId: "anonymous" };
+
 }
