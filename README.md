@@ -10,12 +10,75 @@ A demo-ready, production-inspired realtime workspace showcasing streaming chat, 
 - **Operations dashboard** visualising live WebSocket events and derived metrics.
 - **Reusable design system** built on Tailwind tokens, shadcn/ui primitives, and Inter typography.
 
-## Quickstart
+## Prerequisites
+
+- **Node.js 18.18+** (recommended: install via [nvm](https://github.com/nvm-sh/nvm))
+- **pnpm 8+** (`corepack enable` on Node 18.18+ automatically provides pnpm)
+
+## Step-by-Step Setup & Run Guide
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/your-org/Cryptocurrency-Price-Prediction-Model.git
+   cd Cryptocurrency-Price-Prediction-Model
+   ```
+
+2. **Install JavaScript dependencies**
+
+   ```bash
+   pnpm install
+   ```
+
+3. **Configure environment variables (optional)**
+
+   Copy `.env.example` to `.env.local` if you need to override defaults used by the prediction backend or frontend clients. See [Environment](#environment) for available variables.
+
+4. **Run database migrations (optional)**
+
+   The current demo stores data in-memory, so Prisma migrations are not required. If you connect a database, update the Prisma schema and execute:
+
+   ```bash
+   pnpm prisma migrate dev
+   ```
+
+5. **Start the development servers**
+
+   ```bash
+   pnpm dev
+   ```
+
+   - The Next.js frontend runs on `http://localhost:3000`.
+   - The prediction backend API is served from the same process under `/api/predictions`.
+
+6. **Query the prediction backend**
+
+   Example curl command for retrieving the default portfolio forecast:
+
+   ```bash
+   curl 'http://localhost:3000/api/predictions'
+   ```
+
+   Retrieve a specific asset forecast by providing the `symbol` query parameter (e.g. `BTC` or `ETH`):
+
+   ```bash
+   curl 'http://localhost:3000/api/predictions?symbol=BTC'
+   ```
+
+7. **Run tests**
+
+   ```bash
+   pnpm test
+   ```
+
+## Quickstart (TL;DR)
 
 ```bash
 pnpm install
 pnpm dev
 ```
+
+## Project Scaffold
 
 The project follows the same scaffold as a standard Next.js 14 App Router application. To recreate it from scratch, run:
 
