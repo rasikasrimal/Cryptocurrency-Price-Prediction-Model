@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest",
+    "test": "node node_modules/vitest/vitest.mjs run",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test"
   },
