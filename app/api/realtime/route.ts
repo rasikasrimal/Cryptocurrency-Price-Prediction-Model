@@ -13,24 +13,87 @@ export async function POST(request: Request) {
   const body = await request.json();
   const parsed = realtimeRequestSchema.parse(body);
 
+  let closeStreamRef: (() => void) | undefined;
+
   const stream = new ReadableStream({
     start(controller) {
-      const send = (type: StreamChunk["type"], data: unknown) => {
-        controller.enqueue(formatEvent(type, data));
+      let closed = false;
+      let heartbeat: ReturnType<typeof setInterval> | undefined;
+      const timeouts = new Set<ReturnType<typeof setTimeout>>();
+
+      const clearTimers = () => {
+        heartbeat && clearInterval(heartbeat);
+        heartbeat = undefined;
+        timeouts.forEach(clearTimeout);
+        timeouts.clear();
       };
+
+      const closeStream = () => {
+        if (closed) {
+          return;
+        }
+        closed = true;
+        request.signal.removeEventListener("abort", closeStream);
+        clearTimers();
+        try {
+          controller.close();
+        } catch (error) {
+          if (!(error instanceof TypeError && "message" in error && typeof error.message === "string" && error.message.includes("Invalid state"))) {
+            throw error;
+          }
+        }
+      };
+
+      closeStreamRef = closeStream;
+
+      const safeEnqueue = (chunk: Uint8Array) => {
+        if (closed) {
+          return;
+        }
+        try {
+          controller.enqueue(chunk);
+        } catch (error) {
+          if (error instanceof TypeError && "message" in error && typeof error.message === "string" && error.message.includes("Invalid state")) {
+            closed = true;
+            clearTimers();
+            request.signal.removeEventListener("abort", closeStream);
+            return;
+          }
+          throw error;
+        }
+      };
+
+      const schedule = (fn: () => void, ms: number) => {
+        if (closed) {
+          return;
+        }
+        const timeout = setTimeout(() => {
+          timeouts.delete(timeout);
+          if (!closed) {
+            fn();
+          }
+        }, ms);
+        timeouts.add(timeout);
+      };
+
+      const send = (type: StreamChunk["type"], data: unknown) => {
+        safeEnqueue(formatEvent(type, data));
+      };
+
+      request.signal.addEventListener("abort", closeStream);
 
       send("token", { id: crypto.randomUUID(), text: "Thinking... " });
 
       const toolId = crypto.randomUUID();
-      setTimeout(() => {
+      schedule(() => {
         send("tool-status", { id: toolId, name: "web-search", status: "running" });
       }, 400);
 
-      setTimeout(() => {
+      schedule(() => {
         send("token", { id: crypto.randomUUID(), text: `Analyzing "${parsed.prompt}" ` });
       }, 800);
 
-      setTimeout(() => {
+      schedule(() => {
         const toolResult = {
           id: toolId,
           name: "web-search",
@@ -47,18 +110,19 @@ export async function POST(request: Request) {
         });
         send("tool-status", { id: toolId, name: "web-search", status: "done" });
         send("done", { id: toolId, output: toolResult.output });
-        controller.close();
-      }, 1400);
+        closeStream();
+      }, 1_400);
 
-      const heartbeat = setInterval(() => {
-        controller.enqueue(encoder.encode(`: ping\n\n`));
+      heartbeat = setInterval(() => {
+        safeEnqueue(encoder.encode(`: ping\n\n`));
       }, 15_000);
 
-      controller.enqueue(encoder.encode(`: stream-start\n\n`));
+      safeEnqueue(encoder.encode(`: stream-start\n\n`));
 
-      return () => {
-        clearInterval(heartbeat);
-      };
+      return closeStream;
+    },
+    cancel() {
+      closeStreamRef?.();
     }
   });
 
